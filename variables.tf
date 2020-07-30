@@ -2372,3 +2372,51 @@ variable "create_egress_only_igw" {
   type        = bool
   default     = true
 }
+
+variable "separator" {
+  description = "Separator to apply to resource names"
+  type        = string
+  default     = "-"
+}
+
+variable "internet_gateway_suffix" {
+  description = "Suffix to append to internet gateways name"
+  type        = string
+  default     = ""
+}
+
+variable "nat_gateway_suffix" {
+  description = "Suffix to append to nat gateways name"
+  type        = string
+  default     = ""
+}
+
+variable "route_table_suffix" {
+  description = "Suffix to append to route tables name"
+  type        = string
+  default     = ""
+}
+
+variable "vpn_gateway_suffix" {
+  description = "Suffix to append to vpn gateways name"
+  type        = string
+  default     = ""
+}
+
+variable "numeric_az_tags" {
+  description = "Use a digit in place of the full AZ name when used in Name tags"
+  type        = bool
+  default     = false
+}
+
+variable "numeric_az_prefix" {
+  description = "Prefix to prepend to the AZ number when using numeric_az_tags."
+  type        = string
+  default     = "az"
+}
+
+variable "az_number" {
+  description = "Number to use in place of AZ letter"
+  type        = map(string)
+  default     = { a = 1, b = 2, c = 3, d = 4, e = 5, f = 6 }
+}

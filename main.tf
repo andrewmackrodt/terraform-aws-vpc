@@ -137,7 +137,7 @@ resource "aws_internet_gateway" "this" {
 
   tags = merge(
     {
-      "Name" = format("%s", var.name)
+      "Name" = join(var.separator, compact([var.name, var.internet_gateway_suffix]))
     },
     var.tags,
     var.igw_tags,
@@ -151,7 +151,7 @@ resource "aws_egress_only_internet_gateway" "this" {
 
   tags = merge(
     {
-      "Name" = format("%s", var.name)
+      "Name" = join(var.separator, compact([var.name, var.internet_gateway_suffix]))
     },
     var.tags,
     var.igw_tags,
@@ -168,7 +168,7 @@ resource "aws_route_table" "public" {
 
   tags = merge(
     {
-      "Name" = format("%s-${var.public_subnet_suffix}", var.name)
+      "Name" = join(var.separator, compact([var.name, var.public_subnet_suffix, var.route_table_suffix]))
     },
     var.tags,
     var.public_route_table_tags,
@@ -206,11 +206,12 @@ resource "aws_route_table" "private" {
 
   tags = merge(
     {
-      "Name" = var.single_nat_gateway ? "${var.name}-${var.private_subnet_suffix}" : format(
-        "%s-${var.private_subnet_suffix}-%s",
+      "Name" = join(var.separator, compact([
         var.name,
-        element(var.azs, count.index),
-      )
+        var.private_subnet_suffix,
+        var.route_table_suffix,
+        var.single_nat_gateway ? "" : (var.numeric_az_tags ? "${var.numeric_az_prefix}${var.az_number[substr(strrev(element(var.azs, count.index)), 0, 1)]}" : element(var.azs, count.index))
+      ]))
     },
     var.tags,
     var.private_route_table_tags,
@@ -233,7 +234,7 @@ resource "aws_route_table" "database" {
 
   tags = merge(
     {
-      "Name" = "${var.name}-${var.database_subnet_suffix}"
+      "Name" = join(var.separator, compact([var.name, var.database_subnet_suffix, var.route_table_suffix]))
     },
     var.tags,
     var.database_route_table_tags,
@@ -286,7 +287,7 @@ resource "aws_route_table" "redshift" {
 
   tags = merge(
     {
-      "Name" = "${var.name}-${var.redshift_subnet_suffix}"
+      "Name" = join(var.separator, compact([var.name, var.redshift_subnet_suffix, var.route_table_suffix]))
     },
     var.tags,
     var.redshift_route_table_tags,
@@ -303,7 +304,7 @@ resource "aws_route_table" "elasticache" {
 
   tags = merge(
     {
-      "Name" = "${var.name}-${var.elasticache_subnet_suffix}"
+      "Name" = join(var.separator, compact([var.name, var.elasticache_subnet_suffix, var.route_table_suffix]))
     },
     var.tags,
     var.elasticache_route_table_tags,
@@ -320,7 +321,7 @@ resource "aws_route_table" "intra" {
 
   tags = merge(
     {
-      "Name" = "${var.name}-${var.intra_subnet_suffix}"
+      "Name" = join(var.separator, compact([var.name, var.intra_subnet_suffix, var.route_table_suffix]))
     },
     var.tags,
     var.intra_route_table_tags,
@@ -344,11 +345,11 @@ resource "aws_subnet" "public" {
 
   tags = merge(
     {
-      "Name" = format(
-        "%s-${var.public_subnet_suffix}-%s",
+      "Name" = join(var.separator, compact([
         var.name,
-        element(var.azs, count.index),
-      )
+        var.public_subnet_suffix,
+        var.numeric_az_tags ? "${var.numeric_az_prefix}${var.az_number[substr(strrev(element(var.azs, count.index)), 0, 1)]}" : element(var.azs, count.index)
+      ]))
     },
     var.tags,
     var.public_subnet_tags,
@@ -371,11 +372,11 @@ resource "aws_subnet" "private" {
 
   tags = merge(
     {
-      "Name" = format(
-        "%s-${var.private_subnet_suffix}-%s",
+      "Name" = join(var.separator, compact([
         var.name,
-        element(var.azs, count.index),
-      )
+        var.private_subnet_suffix,
+        var.numeric_az_tags ? "${var.numeric_az_prefix}${var.az_number[substr(strrev(element(var.azs, count.index)), 0, 1)]}" : element(var.azs, count.index)
+      ]))
     },
     var.tags,
     var.private_subnet_tags,
@@ -398,11 +399,11 @@ resource "aws_subnet" "database" {
 
   tags = merge(
     {
-      "Name" = format(
-        "%s-${var.database_subnet_suffix}-%s",
+      "Name" = join(var.separator, compact([
         var.name,
-        element(var.azs, count.index),
-      )
+        var.database_subnet_suffix,
+        var.numeric_az_tags ? "${var.numeric_az_prefix}${var.az_number[substr(strrev(element(var.azs, count.index)), 0, 1)]}" : element(var.azs, count.index)
+      ]))
     },
     var.tags,
     var.database_subnet_tags,
@@ -441,11 +442,11 @@ resource "aws_subnet" "redshift" {
 
   tags = merge(
     {
-      "Name" = format(
-        "%s-${var.redshift_subnet_suffix}-%s",
+      "Name" = join(var.separator, compact([
         var.name,
-        element(var.azs, count.index),
-      )
+        var.redshift_subnet_suffix,
+        var.numeric_az_tags ? "${var.numeric_az_prefix}${var.az_number[substr(strrev(element(var.azs, count.index)), 0, 1)]}" : element(var.azs, count.index)
+      ]))
     },
     var.tags,
     var.redshift_subnet_tags,
@@ -484,11 +485,11 @@ resource "aws_subnet" "elasticache" {
 
   tags = merge(
     {
-      "Name" = format(
-        "%s-${var.elasticache_subnet_suffix}-%s",
+      "Name" = join(var.separator, compact([
         var.name,
-        element(var.azs, count.index),
-      )
+        var.elasticache_subnet_suffix,
+        var.numeric_az_tags ? "${var.numeric_az_prefix}${var.az_number[substr(strrev(element(var.azs, count.index)), 0, 1)]}" : element(var.azs, count.index)
+      ]))
     },
     var.tags,
     var.elasticache_subnet_tags,
@@ -519,11 +520,11 @@ resource "aws_subnet" "intra" {
 
   tags = merge(
     {
-      "Name" = format(
-        "%s-${var.intra_subnet_suffix}-%s",
+      "Name" = join(var.separator, compact([
         var.name,
-        element(var.azs, count.index),
-      )
+        var.intra_subnet_suffix,
+        var.numeric_az_tags ? "${var.numeric_az_prefix}${var.az_number[substr(strrev(element(var.azs, count.index)), 0, 1)]}" : element(var.azs, count.index)
+      ]))
     },
     var.tags,
     var.intra_subnet_tags,
@@ -591,7 +592,7 @@ resource "aws_network_acl" "public" {
 
   tags = merge(
     {
-      "Name" = format("%s-${var.public_subnet_suffix}", var.name)
+      "Name" = join(var.separator, compact([var.name, var.public_subnet_suffix]))
     },
     var.tags,
     var.public_acl_tags,
@@ -643,7 +644,7 @@ resource "aws_network_acl" "private" {
 
   tags = merge(
     {
-      "Name" = format("%s-${var.private_subnet_suffix}", var.name)
+      "Name" = join(var.separator, compact([var.name, var.private_subnet_suffix]))
     },
     var.tags,
     var.private_acl_tags,
@@ -695,7 +696,7 @@ resource "aws_network_acl" "intra" {
 
   tags = merge(
     {
-      "Name" = format("%s-${var.intra_subnet_suffix}", var.name)
+      "Name" = join(var.separator, compact([var.name, var.intra_subnet_suffix]))
     },
     var.tags,
     var.intra_acl_tags,
@@ -747,7 +748,7 @@ resource "aws_network_acl" "database" {
 
   tags = merge(
     {
-      "Name" = format("%s-${var.database_subnet_suffix}", var.name)
+      "Name" = join(var.separator, compact([var.name, var.database_subnet_suffix]))
     },
     var.tags,
     var.database_acl_tags,
@@ -799,7 +800,7 @@ resource "aws_network_acl" "redshift" {
 
   tags = merge(
     {
-      "Name" = format("%s-${var.redshift_subnet_suffix}", var.name)
+      "Name" = join(var.separator, compact([var.name, var.redshift_subnet_suffix]))
     },
     var.tags,
     var.redshift_acl_tags,
@@ -851,7 +852,7 @@ resource "aws_network_acl" "elasticache" {
 
   tags = merge(
     {
-      "Name" = format("%s-${var.elasticache_subnet_suffix}", var.name)
+      "Name" = join(var.separator, compact([var.name, var.elasticache_subnet_suffix]))
     },
     var.tags,
     var.elasticache_acl_tags,
@@ -917,11 +918,11 @@ resource "aws_eip" "nat" {
 
   tags = merge(
     {
-      "Name" = format(
-        "%s-%s",
+      "Name" = join(var.separator, compact([
         var.name,
-        element(var.azs, var.single_nat_gateway ? 0 : count.index),
-      )
+        var.nat_gateway_suffix,
+        var.numeric_az_tags ? "${var.numeric_az_prefix}${var.az_number[substr(strrev(element(var.azs, var.single_nat_gateway ? 0 : count.index)), 0, 1)]}" : (element(var.azs, var.single_nat_gateway ? 0 : count.index)),
+      ]))
     },
     var.tags,
     var.nat_eip_tags,
@@ -942,11 +943,11 @@ resource "aws_nat_gateway" "this" {
 
   tags = merge(
     {
-      "Name" = format(
-        "%s-%s",
+      "Name" = join(var.separator, compact([
         var.name,
-        element(var.azs, var.single_nat_gateway ? 0 : count.index),
-      )
+        var.nat_gateway_suffix,
+        var.numeric_az_tags ? "${var.numeric_az_prefix}${var.az_number[substr(strrev(element(var.azs, count.index)), 0, 1)]}" : element(var.azs, count.index)
+      ]))
     },
     var.tags,
     var.nat_gateway_tags,
@@ -1057,7 +1058,7 @@ resource "aws_customer_gateway" "this" {
 
   tags = merge(
     {
-      Name = format("%s-%s", var.name, each.key)
+      Name = join(var.separator, [var.name, each.key])
     },
     var.tags,
     var.customer_gateway_tags,
@@ -1076,7 +1077,7 @@ resource "aws_vpn_gateway" "this" {
 
   tags = merge(
     {
-      "Name" = format("%s", var.name)
+      "Name" = join(var.separator, compact([var.name, var.vpn_gateway_suffix]))
     },
     var.tags,
     var.vpn_gateway_tags,
